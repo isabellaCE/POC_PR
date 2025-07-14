@@ -1,3 +1,11 @@
+---
+name: Feature # Este é o nome que aparece no dropdown
+about: Adiciona uma nova funcionalidade ao projeto. # Esta é a descrição que aparece no dropdown
+title: 'feat: '
+labels: feature, needs-review
+assignees:
+---
+
 # **📋 Título da demanda**
 
 - :zombie: Devs: @dev
