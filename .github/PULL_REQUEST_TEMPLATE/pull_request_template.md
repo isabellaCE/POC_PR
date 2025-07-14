@@ -1,7 +1,10 @@
 ---
 name: Correção de Bug
 about: Template para correção de bugs
-title: 'prefixo: bug'
+title: 'prefixo: '
+labels: ''
+assignees: isabellaCE
+
 ---
 
 # O resto do seu template começa aqui
