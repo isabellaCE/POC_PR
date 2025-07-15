@@ -1,30 +1,34 @@
----
-name: 🐛 Correção de Bug
-about: Corrija um problema ou erro existente.
-title: '[BUGFIX] '
-labels: bug, needs-triage
-assignees:
----
+# **:beetle: Título da demanda**
 
-## Descrição do Bug
+- :zombie: Devs: @dev
+- :label: Link da demanda: [MK-XXXX](https://mercafacil.atlassian.net/browse/MK-XXXX)
 
-Descreva o bug que está sendo corrigido. Como ele se manifesta? Quais são os passos para reproduzi-lo?
+<br />
 
-## Solução Proposta
+**:fire: Resumo do incidente:**
 
-Explique a solução implementada para corrigir o bug.
+- lorem ipsum dolor sit amet consectetur adipisicing elit. lorem ipsum dolor sit amet consectetur adipisicing elit. lorem ipsum dolor sit amet consectetur adipisicing elit.
 
-## Impacto
+**:hammer_and_wrench: Causa Raiz:**
 
-Qual o impacto dessa correção? Há alguma alteração em outras partes do sistema?
+- lorem ipsum dolor sit amet consectetur adipisicing elit. lorem ipsum dolor sit amet consectetur adipisicing elit. lorem ipsum dolor sit amet consectetur adipisicing elit.
 
-## Como Testar
+**:wrench: Correção Realizada:**
 
-Explique passo a passo como o revisor pode verificar se o bug foi realmente corrigido.
+- lorem ipsum dolor sit amet consectetur adipisicing elit.
+- lorem ipsum dolor sit amet consectetur adipisicing elit.
 
-## Checklist (para quem abre o PR)
+**:mechanic: Evidências de testes local:**
 
-- [ ] Meu código corrige o bug descrito.
-- [ ] Eu adicionei testes que provam que a correção funciona (se aplicável).
-- [ ] Minhas alterações não introduzem novos bugs.
-- [ ] A documentação foi atualizada (se necessário).
+- lorem ipsum dolor sit amet consectetur adipisicing elit.
+- lorem ipsum dolor sit amet consectetur adipisicing elit.
+
+<hr />
+
+> ⛔ Observações:
+>
+> lorem ipsum dolor sit amet consectetur adipisicing elit.
+
+> 🔖 Demandas relacionadas:
+>   - [MK-0000](https://trackco.atlassian.net/browse/MK-0000)
+>   - [MK-0000](https://trackco.atlassian.net/browse/MK-0000)
