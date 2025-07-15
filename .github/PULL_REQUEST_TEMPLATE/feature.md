@@ -1,24 +1,29 @@
-## Descrição
+# **:clipboard: Título da demanda**
 
-Descreva as mudanças que este PR introduz e por que elas são necessárias.
+- :zombie: Devs: @dev
+- :label: Link da demanda: MK-XXXX
 
-## Tipo de Mudança
 
-Marque com um `x` as opções que se aplicam:
+#### **:rocket: Visão Geral**
+- lorem ipsum dolor sit amet consectetur adipisicing elit. lorem ipsum dolor sit amet consectetur adipisicing elit. lorem ipsum dolor sit amet consectetur adipisicing elit.
 
-- [ ] Bug fix (correção de um problema existente)
-- [ ] Nova feature (adiciona uma nova funcionalidade)
-- [ ] Refatoração (melhora do código sem alterar a funcionalidade)
-- [ ] Documentação (apenas mudanças na documentação)
-- [ ] Estilo (formatação, linting, sem mudança de código)
+#### **:sparkles: Mudanças Implementadas**
 
-## Checklist
+- lorem ipsum dolor sit amet consectetur adipisicing elit.
+- lorem ipsum dolor sit amet consectetur adipisicing elit.
+- lorem ipsum dolor sit amet consectetur adipisicing elit.
 
-Certifique-se de que todas as caixas abaixo estejam marcadas antes de solicitar a revisão:
+**:mechanic: Evidências de testes local:**
 
-- [ ] Meu código segue as diretrizes de estilo do projeto.
-- [ ] Eu revisei meu próprio código.
-- [ ] Minhas mudanças não introduzem novos warnings.
-- [ ] Eu adicionei testes que provam que minha correção é eficaz ou que minha feature funciona.
-- [ ] Os testes unitários existentes continuam passando.
-- [ ] A documentação foi atualizada, se necessário.
+- lorem ipsum dolor sit amet consectetur adipisicing elit.
+- lorem ipsum dolor sit amet consectetur adipisicing elit.
+
+<hr />
+
+> ⛔ Observações:
+>
+> lorem ipsum dolor sit amet consectetur adipisicing elit.
+
+> 🔖 Demandas relacionadas:
+>   - [MK-0000](https://trackco.atlassian.net/browse/MK-0000)
+>   - [MK-0000](https://trackco.atlassian.net/browse/MK-0000)
