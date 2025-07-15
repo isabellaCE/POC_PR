@@ -11,12 +11,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Get PR Body and Write to File
-        id: get_pr_body
+      - name: Write PR Body to File Safely
         run: |
-          # Use printf para garantir que o conteúdo seja gravado literalmente
-          # e remova os retornos de carro ao mesmo tempo
-          printf "%s" "${{ github.event.pull_request.body }}" | tr -d '\r' > pr_body.txt
+          # Use o delimitador EOT (End Of Transmission) para lidar com múltiplas linhas e caracteres especiais.
+          # O corpo do PR será gravado no arquivo pr_body.txt sem qualquer interpretação do shell.
+          PR_BODY_CONTENT="${{ github.event.pull_request.body }}"
+          printf "%s" "$PR_BODY_CONTENT" | tr -d '\r' > pr_body.txt
         shell: bash
 
       - name: Validate PR Description
