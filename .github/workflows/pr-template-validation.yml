@@ -1,0 +1,42 @@
+name: PR Template Validation
+
+on:
+  pull_request:
+    types: [opened, edited, reopened] # Executa quando um PR é aberto, editado ou reaberto
+
+jobs:
+  validate-pr-template:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Validate PR Description
+        run: |
+          PR_BODY=$(cat "${{ github.event.pull_request.body }}" | tr -d '\r') # Remove caracteres de retorno de carro
+          if [[ "$PR_BODY" == *"## Descrição"* && "$PR_BODY" != *"## Descrição\n\n"* ]]; then
+            echo "::error file=.github/pull_request_template.md::A seção '## Descrição' não deve estar vazia. Por favor, adicione uma descrição."
+            exit 1
+          fi
+        shell: bash
+
+      - name: Validate PR Type Checklist
+        run: |
+          PR_BODY=$(cat "${{ github.event.pull_request.body }}" | tr -d '\r')
+          if ! echo "$PR_BODY" | grep -q "-\[x\]"; then
+            echo "::error file=.github/pull_request_template.md::Pelo menos um tipo de mudança deve ser selecionado no checklist 'Tipo de Mudança'."
+            exit 1
+          fi
+        shell: bash
+
+      - name: Validate Checklist
+        run: |
+          PR_BODY=$(cat "${{ github.event.pull_request.body }}" | tr -d '\r')
+          # Verifica se todos os itens do checklist estão marcados
+          UNCHECKED_ITEMS=$(echo "$PR_BODY" | grep "-\[ \]")
+
+          if [[ -n "$UNCHECKED_ITEMS" ]]; then
+            echo "::error file=.github/pull_request_template.md::Alguns itens do 'Checklist' não foram marcados. Por favor, marque todos os itens relevantes."
+            exit 1
+          fi
+        shell: bash
