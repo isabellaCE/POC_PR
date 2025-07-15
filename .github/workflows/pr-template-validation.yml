@@ -2,7 +2,7 @@ name: PR Template Validation
 
 on:
   pull_request:
-    types: [opened, edited, reopened] # Executa quando um PR é aberto, editado ou reaberto
+    types: [opened, edited, reopened]
 
 jobs:
   validate-pr-template:
@@ -11,10 +11,22 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Get PR Body
+        id: get_pr_body
+        run: |
+          PR_BODY="${{ github.event.pull_request.body }}"
+          # Remove caracteres de retorno de carro para compatibilidade (Windows/Linux)
+          echo "$PR_BODY" | tr -d '\r' > pr_body.txt
+        shell: bash
+
       - name: Validate PR Description
         run: |
-          PR_BODY=$(cat "${{ github.event.pull_request.body }}" | tr -d '\r') # Remove caracteres de retorno de carro
-          if [[ "$PR_BODY" == *"## Descrição"* && "$PR_BODY" != *"## Descrição\n\n"* ]]; then
+          # Leia o conteúdo do PR do arquivo temporário
+          PR_BODY=$(cat pr_body.txt)
+          
+          # Verifica se a seção "## Descrição" existe e não é seguida imediatamente por uma nova linha dupla
+          # indicando que a descrição está vazia.
+          if echo "$PR_BODY" | grep -q "## Descrição" && ! echo "$PR_BODY" | grep -q "## Descrição\n\n[[:space:]]*[^[:space:]]"; then
             echo "::error file=.github/pull_request_template.md::A seção '## Descrição' não deve estar vazia. Por favor, adicione uma descrição."
             exit 1
           fi
@@ -22,20 +34,20 @@ jobs:
 
       - name: Validate PR Type Checklist
         run: |
-          PR_BODY=$(cat "${{ github.event.pull_request.body }}" | tr -d '\r')
-          if ! echo "$PR_BODY" | grep -q "-\[x\]"; then
+          PR_BODY=$(cat pr_body.txt)
+          # Verifica se pelo menos um item do checklist de "Tipo de Mudança" está marcado
+          if ! echo "$PR_BODY" | grep -q "## Tipo de Mudança" || ! echo "$PR_BODY" | grep -A 5 "## Tipo de Mudança" | grep -q "-\\[x\\]"; then
             echo "::error file=.github/pull_request_template.md::Pelo menos um tipo de mudança deve ser selecionado no checklist 'Tipo de Mudança'."
             exit 1
           fi
         shell: bash
 
-      - name: Validate Checklist
+      - name: Validate General Checklist
         run: |
-          PR_BODY=$(cat "${{ github.event.pull_request.body }}" | tr -d '\r')
-          # Verifica se todos os itens do checklist estão marcados
-          UNCHECKED_ITEMS=$(echo "$PR_BODY" | grep "-\[ \]")
-
-          if [[ -n "$UNCHECKED_ITEMS" ]]; then
+          PR_BODY=$(cat pr_body.txt)
+          # Verifica se todos os itens do "Checklist" estão marcados.
+          # Procura por "## Checklist" e então busca por qualquer "-[ ]" (item desmarcado) nas linhas seguintes.
+          if echo "$PR_BODY" | grep -q "## Checklist" && echo "$PR_BODY" | grep -A 10 "## Checklist" | grep -q "-\\[ \\]"; then
             echo "::error file=.github/pull_request_template.md::Alguns itens do 'Checklist' não foram marcados. Por favor, marque todos os itens relevantes."
             exit 1
           fi
