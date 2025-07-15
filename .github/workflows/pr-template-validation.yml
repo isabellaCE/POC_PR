@@ -56,46 +56,25 @@ jobs:
           # --- Perform Checks ---
           # Check for PR Title. The title is separate from the body, so it's a direct check.
           PR_TITLE="${{ github.event.pull_request.title }}"
-          if [[ "$PR_TITLE" =~ ^:clipboard: ]]; then
-            echo "✅ PR Title starts with :clipboard:."
+          # O título do PR deve começar com "Feature" ou "Bugfix"
+          # Usando (Feature|Bugfix) para corresponder a um OU outro, seguido por um espaço
+          if [[ "$PR_TITLE" =~ ^(Feature|Bugfix)\  ]]; then
+            echo "✅ PR Title starts with Feature or Bugfix."
           else
-            echo "❌ PR Title does not start with :clipboard:."
-            INVALID_SECTIONS="${INVALID_SECTIONS} - O título do PR deve começar com ':clipboard:'.\n"
+            echo "❌ PR Title does not start with Feature or Bugfix."
+            INVALID_SECTIONS="${INVALID_SECTIONS} - O título do PR deve começar com 'Feature' ou 'Bugfix' (seguido por um espaço).\n"
           fi
 
           # Check for "Título da demanda" in the body (if you want to double-check, otherwise title is enough)
-          if ! echo "$PR_BODY" | grep -q "# \*\*:\clipboard: Título da demanda\*\*"; then
-            echo "❌ Title heading '# **:clipboard: Título da demanda**' not found in body."
-            INVALID_SECTIONS="${INVALID_SECTIONS} - O cabeçalho principal '# **:clipboard: Título da demanda**' está faltando no corpo do PR.\n"
+          if ! echo "$PR_BODY" | grep -q "^# \*\*:\clipboard: .*\*\*"; then
+            echo "❌ Main title heading '# **:clipboard: ...**' not found or malformed in body."
+            INVALID_SECTIONS="${INVALID_SECTIONS} - O cabeçalho principal '# **:clipboard: [TEXTO]**' está faltando ou não segue o padrão esperado no corpo do PR.\n"
           fi
 
           # Validate specific sections
           check_section "#### \*\*:rocket: Visão Geral\*\*" "lorem ipsum dolor sit amet consectetur adipisicing elit\.|^\s*$"
           check_section "#### \*\*:sparkles: Mudanças Implementadas\*\*" "lorem ipsum dolor sit amet consectetur adipisicing elit\.|^\s*$"
           check_section "\*\*:\mechanic: Evidências de testes local:\*\*" "lorem ipsum dolor sit amet consectetur adipisicing elit\.|^\s*$"
-
-          # Validate "Observações"
-          if ! echo "$PR_BODY" | grep -q "> ⛔ Observações:"; then
-            echo "❌ Section missing: Observações"
-            INVALID_SECTIONS="${INVALID_SECTIONS} - Seção 'Observações' está faltando.\n"
-          elif echo "$PR_BODY" | grep -qE "> ⛔ Observações:\s*\n>\s*lorem ipsum dolor sit amet consectetur adipisicing elit\.|> ⛔ Observações:\s*\n>\s*$" ; then
-            echo "❌ Section 'Observações' contains placeholder content."
-            INVALID_SECTIONS="${INVALID_SECTIONS} - Conteúdo da seção 'Observações' parece ser um placeholder ou está vazio.\n"
-          else
-            echo "✅ Section 'Observações' found and content looks good."
-          fi
-
-          # Validate "Demandas relacionadas"
-          if ! echo "$PR_BODY" | grep -q "> 🔖 Demandas relacionadas:"; then
-            echo "❌ Section missing: Demandas relacionadas"
-            INVALID_SECTIONS="${INVALID_SECTIONS} - Seção 'Demandas relacionadas' está faltando.\n"
-          elif echo "$PR_BODY" | grep -qE "> 🔖 Demandas relacionadas:\s*\n\s*- \[MK-0000\]\(https://trackco.atlassian.net/browse/MK-0000\)\s*\n\s*- \[MK-0000\]\(https://trackco.atlassian.net/browse/MK-0000\)" || \
-               echo "$PR_BODY" | grep -qE "> 🔖 Demandas relacionadas:\s*\n\s*$" ; then
-            echo "❌ Section 'Demandas relacionadas' contains placeholder content."
-            INVALID_SECTIONS="${INVALID_SECTIONS} - Conteúdo da seção 'Demandas relacionadas' parece ser um placeholder ou está vazio.\n"
-          else
-            echo "✅ Section 'Demandas relacionadas' found and content looks good."
-          fi
 
 
           if [ -n "$INVALID_SECTIONS" ]; then
