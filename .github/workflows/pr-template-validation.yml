@@ -1,48 +1,125 @@
-name: PR Template Validation
+name: Validate PR Template
 
 on:
   pull_request:
-    types: [opened, edited, reopened]
+    types: [opened, edited, reopened, synchronize]
 
 jobs:
-  validate-pr-template:
+  validate_pr_body:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Write PR Body to File Safely
+      - name: Get PR Body
+        id: get_pr_body
         run: |
-          # Use o delimitador EOT (End Of Transmission) para lidar com múltiplas linhas e caracteres especiais.
-          # O corpo do PR será gravado no arquivo pr_body.txt sem qualquer interpretação do shell.
-          PR_BODY_CONTENT="${{ github.event.pull_request.body }}"
-          printf "%s" "$PR_BODY_CONTENT" | tr -d '\r' > pr_body.txt
-        shell: bash
+          PR_BODY="${{ github.event.pull_request.body }}"
+          # Escape special characters for sed/grep if needed later, but for basic string check, not strictly necessary.
+          echo "PR_BODY<<EOF" >> $GITHUB_OUTPUT
+          echo "$PR_BODY" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
 
-      - name: Validate PR Description
+      - name: Validate PR Template Sections
+        env:
+          PR_BODY: ${{ steps.get_pr_body.outputs.PR_BODY }}
         run: |
-          PR_BODY=$(cat pr_body.txt)
-          
-          if echo "$PR_BODY" | grep -q "## Descrição" && ! echo "$PR_BODY" | grep -q "## Descrição\n\n[[:space:]]*[^[:space:]]"; then
-            echo "::error file=.github/pull_request_template.md::A seção '## Descrição' não deve estar vazia. Por favor, adicione uma descrição."
-            exit 1
-          fi
-        shell: bash
+          echo "Validating PR body..."
+          INVALID_SECTIONS=""
 
-      - name: Validate PR Type Checklist
-        run: |
-          PR_BODY=$(cat pr_body.txt)
-          if ! echo "$PR_BODY" | grep -q "## Tipo de Mudança" || ! echo "$PR_BODY" | grep -A 5 "## Tipo de Mudança" | grep -q "-\\[x\\]"; then
-            echo "::error file=.github/pull_request_template.md::Pelo menos um tipo de mudança deve ser selecionado no checklist 'Tipo de Mudança'."
-            exit 1
-          fi
-        shell: bash
+          # Function to check if a section is present and not just lorem ipsum
+          check_section() {
+            local section_title="$1"
+            local expected_content_regex="$2" # Regex to check if content is meaningful (e.g., not lorem ipsum)
+            local section_found=$(echo "$PR_BODY" | grep -qc "$section_title")
+            local content_meaningful=true
 
-      - name: Validate General Checklist
-        run: |
-          PR_BODY=$(cat pr_body.txt)
-          if echo "$PR_BODY" | grep -q "## Checklist" && echo "$PR_BODY" | grep -A 10 "## Checklist" | grep -q "-\\[ \\]"; then
-            echo "::error file=.github/pull_request_template.md::Alguns itens do 'Checklist' não foram marcados. Por favor, marque todos os itens relevantes."
-            exit 1
+            if [ "$section_found" -eq 0 ]; then
+              echo "❌ Section missing: $section_title"
+              INVALID_SECTIONS="${INVALID_SECTIONS} - Seção '$section_title' está faltando.\n"
+            else
+              echo "✅ Section found: $section_title"
+              # Extract content after section_title until the next section_title or end of document
+              # This is a simplified approach; for complex templates, a more robust parsing might be needed.
+              SECTION_CONTENT=$(echo "$PR_BODY" | awk "/$section_title/{flag=1;next}/^#### \*\*:/||/^<hr \/>/{flag=0}flag" | tr -d '\n')
+
+              if echo "$SECTION_CONTENT" | grep -qE "$expected_content_regex"; then
+                echo "❌ Section '$section_title' contains placeholder content."
+                content_meaningful=false
+                INVALID_SECTIONS="${INVALID_SECTIONS} - Conteúdo da seção '$section_title' parece ser um placeholder ou está vazio.\n"
+              else
+                echo "✅ Section '$section_title' content looks good."
+              fi
+            fi
+          }
+
+          # --- Perform Checks ---
+          # Check for PR Title. The title is separate from the body, so it's a direct check.
+          PR_TITLE="${{ github.event.pull_request.title }}"
+          if [[ "$PR_TITLE" =~ ^:clipboard: ]]; then
+            echo "✅ PR Title starts with :clipboard:."
+          else
+            echo "❌ PR Title does not start with :clipboard:."
+            INVALID_SECTIONS="${INVALID_SECTIONS} - O título do PR deve começar com ':clipboard:'.\n"
           fi
-        shell: bash
+
+          # Check for "Título da demanda" in the body (if you want to double-check, otherwise title is enough)
+          if ! echo "$PR_BODY" | grep -q "# \*\*:\clipboard: Título da demanda\*\*"; then
+            echo "❌ Title heading '# **:clipboard: Título da demanda**' not found in body."
+            INVALID_SECTIONS="${INVALID_SECTIONS} - O cabeçalho principal '# **:clipboard: Título da demanda**' está faltando no corpo do PR.\n"
+          fi
+
+          # Validate specific sections
+          check_section "#### \*\*:rocket: Visão Geral\*\*" "lorem ipsum dolor sit amet consectetur adipisicing elit\.|^\s*$"
+          check_section "#### \*\*:sparkles: Mudanças Implementadas\*\*" "lorem ipsum dolor sit amet consectetur adipisicing elit\.|^\s*$"
+          check_section "\*\*:\mechanic: Evidências de testes local:\*\*" "lorem ipsum dolor sit amet consectetur adipisicing elit\.|^\s*$"
+
+          # Validate "Observações"
+          if ! echo "$PR_BODY" | grep -q "> ⛔ Observações:"; then
+            echo "❌ Section missing: Observações"
+            INVALID_SECTIONS="${INVALID_SECTIONS} - Seção 'Observações' está faltando.\n"
+          elif echo "$PR_BODY" | grep -qE "> ⛔ Observações:\s*\n>\s*lorem ipsum dolor sit amet consectetur adipisicing elit\.|> ⛔ Observações:\s*\n>\s*$" ; then
+            echo "❌ Section 'Observações' contains placeholder content."
+            INVALID_SECTIONS="${INVALID_SECTIONS} - Conteúdo da seção 'Observações' parece ser um placeholder ou está vazio.\n"
+          else
+            echo "✅ Section 'Observações' found and content looks good."
+          fi
+
+          # Validate "Demandas relacionadas"
+          if ! echo "$PR_BODY" | grep -q "> 🔖 Demandas relacionadas:"; then
+            echo "❌ Section missing: Demandas relacionadas"
+            INVALID_SECTIONS="${INVALID_SECTIONS} - Seção 'Demandas relacionadas' está faltando.\n"
+          elif echo "$PR_BODY" | grep -qE "> 🔖 Demandas relacionadas:\s*\n\s*- \[MK-0000\]\(https://trackco.atlassian.net/browse/MK-0000\)\s*\n\s*- \[MK-0000\]\(https://trackco.atlassian.net/browse/MK-0000\)" || \
+               echo "$PR_BODY" | grep -qE "> 🔖 Demandas relacionadas:\s*\n\s*$" ; then
+            echo "❌ Section 'Demandas relacionadas' contains placeholder content."
+            INVALID_SECTIONS="${INVALID_SECTIONS} - Conteúdo da seção 'Demandas relacionadas' parece ser um placeholder ou está vazio.\n"
+          else
+            echo "✅ Section 'Demandas relacionadas' found and content looks good."
+          fi
+
+
+          if [ -n "$INVALID_SECTIONS" ]; then
+            COMMENT_BODY="⚠️ **Validação do Template do PR Falhou!** ⚠️\n\nPor favor, corrija as seguintes questões no corpo do seu Pull Request para que ele siga o template:\n\n$INVALID_SECTIONS\n\n---"
+            echo "COMMENT_BODY<<EOF" >> $GITHUB_OUTPUT
+            echo "$COMMENT_BODY" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+            echo "::set-output name=validation_failed::true" >> $GITHUB_OUTPUT # Set output for subsequent step
+            exit 1 # Fail the job
+          else
+            echo "::set-output name=validation_failed::false" >> $GITHUB_OUTPUT
+            echo "✅ PR template is valid!"
+          fi
+        id: validate_template
+
+      - name: Add comment on PR failure
+        if: failure() && steps.validate_template.outputs.validation_failed == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const commentBody = `${{ steps.validate_template.outputs.COMMENT_BODY }}`;
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: commentBody
+            });
