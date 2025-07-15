@@ -1,29 +1,24 @@
----
-name: 🚀 Nova Funcionalidade
-about: Proponha uma nova funcionalidade para o projeto.
-title: '[FEATURE] '
-labels: feature, needs-review
-assignees:
----
+## Descrição
 
-## Descrição da Nova Funcionalidade
+Descreva as mudanças que este PR introduz e por que elas são necessárias.
 
-Descreva claramente a funcionalidade que você está adicionando. Quais problemas ela resolve ou quais capacidades ela traz?
+## Tipo de Mudança
 
-## Tarefas Concluídas
+Marque com um `x` as opções que se aplicam:
 
-- [ ] Listar item 1
-- [ ] Listar item 2
-- [ ] ...
+- [ ] Bug fix (correção de um problema existente)
+- [ ] Nova feature (adiciona uma nova funcionalidade)
+- [ ] Refatoração (melhora do código sem alterar a funcionalidade)
+- [ ] Documentação (apenas mudanças na documentação)
+- [ ] Estilo (formatação, linting, sem mudança de código)
 
-## Como Testar
+## Checklist
 
-Explique passo a passo como o revisor pode testar sua nova funcionalidade.
-
-## Checklist (para quem abre o PR)
+Certifique-se de que todas as caixas abaixo estejam marcadas antes de solicitar a revisão:
 
 - [ ] Meu código segue as diretrizes de estilo do projeto.
 - [ ] Eu revisei meu próprio código.
-- [ ] Eu adicionei testes que provam que minha funcionalidade funciona (se aplicável).
-- [ ] Minhas alterações não geram novos avisos ou erros.
-- [ ] A documentação foi atualizada conforme necessário.
+- [ ] Minhas mudanças não introduzem novos warnings.
+- [ ] Eu adicionei testes que provam que minha correção é eficaz ou que minha feature funciona.
+- [ ] Os testes unitários existentes continuam passando.
+- [ ] A documentação foi atualizada, se necessário.
